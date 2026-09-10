@@ -8,6 +8,7 @@
     "dev": "nodemon src/app.js",
     "start": "node src/app.js",
     "seed": "node src/utils/seed.js",
+    "seed:coupons": "node src/utils/seedCoupons.js",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules NODE_ENV=test jest --runInBand"
   },
   "dependencies": {

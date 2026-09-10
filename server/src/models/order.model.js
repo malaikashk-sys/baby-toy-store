@@ -5,6 +5,10 @@ const orderItemSchema = new mongoose.Schema({
   name: { type: String, required: true },
   price: { type: Number, required: true },
   quantity: { type: Number, required: true },
+  variant: {
+    size: { type: String },
+    color: { type: String },
+  },
 });
 
 const orderSchema = new mongoose.Schema(
@@ -12,7 +16,6 @@ const orderSchema = new mongoose.Schema(
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     items: [orderItemSchema],
     totalAmount: { type: Number, required: true },
-    // Stripe PaymentIntent id — webhook isse order dhoondta hai jab payment confirm hoti hai
     paymentIntentId: { type: String },
     status: {
       type: String,

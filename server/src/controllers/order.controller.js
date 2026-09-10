@@ -4,8 +4,16 @@ import Product from "../models/product.model.js";
 import Coupon from "../models/coupon.model.js";
 import User from "../models/user.model.js";
 import { createNotification } from "../utils/notify.js";
+import { logAction } from "../utils/auditLog.js";
 
-// Create order from current cart
+const escapeCSVField = (field) => {
+  const str = String(field ?? "");
+  if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+};
+
 export const createOrder = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -23,23 +31,62 @@ export const createOrder = async (req, res) => {
     for (const item of cart.items) {
       const product = item.product;
 
-      if (!product || product.stock < item.quantity) {
+      if (!product) {
         return res.status(400).json({
           success: false,
-          message: `Insufficient stock for ${product ? product.name : "a product"}`,
+          message: "A product in your cart no longer exists",
         });
+      }
+
+      let itemPrice = product.price;
+      let matchedVariant = null;
+
+      if (product.variants && product.variants.length > 0) {
+        matchedVariant = product.variants.find(
+          (v) =>
+            (v.size || null) === (item.variant?.size || null) &&
+            (v.color || null) === (item.variant?.color || null)
+        );
+
+        if (!matchedVariant) {
+          return res.status(400).json({
+            success: false,
+            message: `Selected variant no longer exists for ${product.name}`,
+          });
+        }
+
+        if (matchedVariant.stock < item.quantity) {
+          return res.status(400).json({
+            success: false,
+            message: `Insufficient stock for ${product.name} (${matchedVariant.size || ""} ${matchedVariant.color || ""})`,
+          });
+        }
+
+        itemPrice = matchedVariant.price || product.price;
+      } else {
+        if (product.stock < item.quantity) {
+          return res.status(400).json({
+            success: false,
+            message: `Insufficient stock for ${product.name}`,
+          });
+        }
       }
 
       orderItems.push({
         product: product._id,
         name: product.name,
-        price: product.price,
+        price: itemPrice,
         quantity: item.quantity,
+        variant: item.variant?.size || item.variant?.color ? item.variant : undefined,
       });
 
-      totalAmount += product.price * item.quantity;
+      totalAmount += itemPrice * item.quantity;
 
-      product.stock -= item.quantity;
+      if (matchedVariant) {
+        matchedVariant.stock -= item.quantity;
+      } else {
+        product.stock -= item.quantity;
+      }
       await product.save();
     }
 
@@ -88,7 +135,6 @@ export const createOrder = async (req, res) => {
   }
 };
 
-// Get logged-in user's orders
 export const getMyOrders = async (req, res) => {
   try {
     const orders = await Order.find({ user: req.user.id }).sort({ createdAt: -1 });
@@ -98,7 +144,6 @@ export const getMyOrders = async (req, res) => {
   }
 };
 
-// Get single order by ID
 export const getOrderById = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
@@ -116,7 +161,7 @@ export const getOrderById = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-// Update order status (Admin/Staff only)
+
 export const updateOrderStatus = async (req, res) => {
   try {
     const { status, note } = req.body;
@@ -139,13 +184,20 @@ export const updateOrderStatus = async (req, res) => {
       { orderId: order._id, status }
     );
 
+    await logAction({
+      user: req.user,
+      action: "order_status_updated",
+      entityType: "Order",
+      entityId: order._id,
+      details: `Order status changed to "${status}"${note ? ` — ${note}` : ""}`,
+    });
+
     res.status(200).json({ success: true, message: "Order status updated", data: order });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// Get all orders (Admin/Staff only)
 export const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find().populate("user", "name email").sort({ createdAt: -1 });
@@ -155,7 +207,6 @@ export const getAllOrders = async (req, res) => {
   }
 };
 
-// Basic Admin/Staff analytics summary (revenue, order counts, products, customers)
 export const getAdminStats = async (req, res) => {
   try {
     const paidStatuses = ["Paid", "Processing", "Packed", "Shipped", "Delivered"];
@@ -186,6 +237,50 @@ export const getAdminStats = async (req, res) => {
         ordersByStatus,
       },
     });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const exportOrdersCSV = async (req, res) => {
+  try {
+    const orders = await Order.find().populate("user", "name email").sort({ createdAt: -1 });
+
+    const headers = [
+      "Order ID", "Customer Name", "Customer Email", "Total Amount",
+      "Status", "Items", "Created At",
+    ];
+
+    const rows = orders.map((order) => {
+      const itemsSummary = order.items
+        .map((item) => {
+          const variantPart = item.variant?.size || item.variant?.color
+            ? ` (${item.variant.size || ""}/${item.variant.color || ""})`
+            : "";
+          return `${item.name}${variantPart} x${item.quantity}`;
+        })
+        .join("; ");
+
+      return [
+        order._id.toString(),
+        order.user?.name || "N/A",
+        order.user?.email || "N/A",
+        order.totalAmount,
+        order.status,
+        itemsSummary,
+        order.createdAt.toISOString(),
+      ];
+    });
+
+    const csvLines = [
+      headers.map(escapeCSVField).join(","),
+      ...rows.map((row) => row.map(escapeCSVField).join(",")),
+    ];
+    const csvContent = csvLines.join("\n");
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", "attachment; filename=orders_export.csv");
+    res.status(200).send(csvContent);
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

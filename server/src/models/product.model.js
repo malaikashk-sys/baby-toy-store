@@ -72,6 +72,17 @@ const productSchema = new mongoose.Schema(
       min: 0,
       default: 0,
     },
+    // Variants: agar product size/color mein aata hai to yahan har combination
+    // ka apna stock aur (optional) price-override hota hai. Agar array khali hai
+    // to product ka base price/stock hi use hota hai (purana behavior).
+    variants: [
+      {
+        size: { type: String, trim: true },
+        color: { type: String, trim: true },
+        stock: { type: Number, required: true, min: 0, default: 0 },
+        price: { type: Number, min: 0 }, // optional — na diya to base price use hoga
+      },
+    ],
     images: [
       {
         url: { type: String, required: true },
