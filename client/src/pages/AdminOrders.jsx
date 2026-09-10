@@ -10,7 +10,8 @@ function AdminOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [notes, setNotes] = useState({}); // orderId -> note text (typed but not yet applied)
+  const [notes, setNotes] = useState({});
+  const [exporting, setExporting] = useState(false);
 
   const fetchAllOrders = async () => {
     try {
@@ -38,12 +39,43 @@ function AdminOrders() {
     }
   };
 
+  // CSV download — axios se blob fetch karke manually save karna hai
+  // (taake Authorization header wali request bhi kaam kare, seedha <a href> se token nahi ja sakta)
+  const handleExportCSV = async () => {
+    setExporting(true);
+    try {
+      const response = await api.get("/orders/export/csv", { responseType: "blob" });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "orders_export.csv");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("Orders CSV downloaded!");
+    } catch (err) {
+      toast.error("Failed to export orders");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   if (loading) return <p className="text-center mt-10 text-gray-500">Loading orders...</p>;
   if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <h2 className="text-2xl font-bold text-orange-700 mb-4">Admin — All Orders</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold text-orange-700">Admin — All Orders</h2>
+        <button
+          onClick={handleExportCSV}
+          disabled={exporting}
+          className="bg-orange-500 text-white text-sm px-4 py-2 rounded-lg hover:bg-orange-600 transition disabled:opacity-50"
+        >
+          {exporting ? "Exporting..." : "Export CSV"}
+        </button>
+      </div>
 
       <div className="space-y-4">
         {orders.map((order) => (

@@ -24,7 +24,9 @@ function AdminProducts() {
     stock: "",
   });
   const [images, setImages] = useState([]);
+  const [variants, setVariants] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -32,6 +34,40 @@ function AdminProducts() {
 
   const handleImageChange = (e) => {
     setImages([...e.target.files]);
+  };
+
+  const addVariantRow = () => {
+    setVariants([...variants, { size: "", color: "", stock: "", price: "" }]);
+  };
+
+  const removeVariantRow = (index) => {
+    setVariants(variants.filter((_, i) => i !== index));
+  };
+
+  const handleVariantChange = (index, field, value) => {
+    const updated = [...variants];
+    updated[index][field] = value;
+    setVariants(updated);
+  };
+
+  const handleExportCSV = async () => {
+    setExporting(true);
+    try {
+      const response = await api.get("/products/export/csv", { responseType: "blob" });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "products_export.csv");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("Products CSV downloaded!");
+    } catch (err) {
+      toast.error("Failed to export products");
+    } finally {
+      setExporting(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -46,6 +82,16 @@ function AdminProducts() {
       images.forEach((file) => {
         formData.append("images", file);
       });
+
+      if (variants.length > 0) {
+        const cleanedVariants = variants.map((v) => ({
+          size: v.size,
+          color: v.color,
+          stock: Number(v.stock) || 0,
+          ...(v.price ? { price: Number(v.price) } : {}),
+        }));
+        formData.append("variants", JSON.stringify(cleanedVariants));
+      }
 
       await api.post("/products", formData);
 
@@ -62,6 +108,7 @@ function AdminProducts() {
         stock: "",
       });
       setImages([]);
+      setVariants([]);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to create product");
     } finally {
@@ -71,7 +118,16 @@ function AdminProducts() {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <h2 className="text-2xl font-bold text-orange-700 mb-4">Admin — Add Product</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold text-orange-700">Admin — Add Product</h2>
+        <button
+          onClick={handleExportCSV}
+          disabled={exporting}
+          className="bg-orange-500 text-white text-sm px-4 py-2 rounded-lg hover:bg-orange-600 transition disabled:opacity-50"
+        >
+          {exporting ? "Exporting..." : "Export CSV"}
+        </button>
+      </div>
 
       <form
         onSubmit={handleSubmit}
@@ -168,7 +224,9 @@ function AdminProducts() {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Base Price {variants.length > 0 && <span className="text-xs text-gray-400">(fallback if variant has no price)</span>}
+            </label>
             <input
               type="number"
               name="price"
@@ -181,7 +239,9 @@ function AdminProducts() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Base Stock {variants.length > 0 && <span className="text-xs text-gray-400">(ignored if variants exist)</span>}
+            </label>
             <input
               type="number"
               name="stock"
@@ -192,6 +252,63 @@ function AdminProducts() {
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
             />
           </div>
+        </div>
+
+        <div className="border-t border-gray-200 pt-4">
+          <div className="flex justify-between items-center mb-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Variants (optional — size/color)
+            </label>
+            <button
+              type="button"
+              onClick={addVariantRow}
+              className="text-sm text-orange-600 border border-orange-500 px-2 py-1 rounded-lg hover:bg-orange-50"
+            >
+              + Add Variant
+            </button>
+          </div>
+
+          {variants.map((variant, index) => (
+            <div key={index} className="flex flex-wrap gap-2 mb-2 items-center bg-orange-50 p-2 rounded-lg">
+              <input
+                type="text"
+                placeholder="Size (e.g. Large)"
+                value={variant.size}
+                onChange={(e) => handleVariantChange(index, "size", e.target.value)}
+                className="border border-gray-300 rounded-lg px-2 py-1 flex-1 min-w-[100px]"
+              />
+              <input
+                type="text"
+                placeholder="Color (e.g. Red)"
+                value={variant.color}
+                onChange={(e) => handleVariantChange(index, "color", e.target.value)}
+                className="border border-gray-300 rounded-lg px-2 py-1 flex-1 min-w-[100px]"
+              />
+              <input
+                type="number"
+                placeholder="Stock"
+                min="0"
+                value={variant.stock}
+                onChange={(e) => handleVariantChange(index, "stock", e.target.value)}
+                className="border border-gray-300 rounded-lg px-2 py-1 w-24"
+              />
+              <input
+                type="number"
+                placeholder="Price (optional)"
+                min="0"
+                value={variant.price}
+                onChange={(e) => handleVariantChange(index, "price", e.target.value)}
+                className="border border-gray-300 rounded-lg px-2 py-1 w-32"
+              />
+              <button
+                type="button"
+                onClick={() => removeVariantRow(index)}
+                className="text-red-500 text-sm px-2"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
         </div>
 
         <div>

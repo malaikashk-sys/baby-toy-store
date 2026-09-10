@@ -15,6 +15,8 @@ import AdminProducts from "./pages/AdminProducts";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminCreateStaff from "./pages/AdminCreateStaff";
 import Notifications from "./pages/Notifications";
+import AdminReviews from "./pages/AdminReviews";
+import AdminAuditLogs from "./pages/AdminAuditLogs";
 
 function App() {
   return (
@@ -24,12 +26,12 @@ function App() {
         toastOptions={{
           duration: 3000,
           style: {
-            background: "#fff7ed", // orange-50
-            color: "#c2410c", // orange-700
-            border: "1px solid #fed7aa", // orange-200
+            background: "#fff7ed",
+            color: "#c2410c",
+            border: "1px solid #fed7aa",
           },
           success: {
-            iconTheme: { primary: "#f97316", secondary: "#fff7ed" }, // orange-500
+            iconTheme: { primary: "#f97316", secondary: "#fff7ed" },
           },
         }}
       />
@@ -49,6 +51,8 @@ function App() {
         <Route path="/admin/create-staff" element={<AdminCreateStaff />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/admin/products" element={<AdminProducts />} />
+        <Route path="/admin/reviews" element={<AdminReviews />} />
+        <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
       </Routes>
     </BrowserRouter>
   );

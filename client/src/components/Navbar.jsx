@@ -6,7 +6,6 @@ function Navbar() {
   const user = storedUser ? JSON.parse(storedUser) : null;
   const isAdminOrStaff = user && (user.role === "admin" || user.role === "staff");
   const isAdmin = user && user.role === "admin";
-  // Shopping features sirf customers (aur logged-out guests) ke liye — admin/staff ke kaam ki nahi
   const showShoppingLinks = !isAdminOrStaff;
 
   const handleLogout = () => {
@@ -42,7 +41,10 @@ function Navbar() {
           {isAdminOrStaff && (
             <>
               <Link to="/admin/dashboard" className="hover:text-orange-100">Dashboard</Link>
+              <Link to="/admin/products" className="hover:text-orange-100">Add Product</Link>
               <Link to="/admin/orders" className="hover:text-orange-100">Admin</Link>
+              <Link to="/admin/reviews" className="hover:text-orange-100">Reviews</Link>
+              <Link to="/admin/audit-logs" className="hover:text-orange-100">Audit Logs</Link>
             </>
           )}
           {isAdmin && (
