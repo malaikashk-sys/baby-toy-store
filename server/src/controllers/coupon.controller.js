@@ -1,16 +1,77 @@
 import Coupon from "../models/coupon.model.js";
+import { logAction } from "../utils/auditLog.js";
 
-// Create a coupon (admin use, for now open)
 export const createCoupon = async (req, res) => {
   try {
     const coupon = await Coupon.create(req.body);
+
+    await logAction({
+      user: req.user,
+      action: "coupon_created",
+      entityType: "Coupon",
+      entityId: coupon._id,
+      details: `Created coupon "${coupon.code}"`,
+    });
+
     res.status(201).json({ success: true, message: "Coupon created", data: coupon });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }
 };
+export const deleteCoupon = async (req, res) => {
+  try {
+    const coupon = await Coupon.findByIdAndDelete(req.params.id);
 
-// Validate a coupon against an order amount
+    if (!coupon) {
+      return res.status(404).json({ success: false, message: "Coupon not found" });
+    }
+
+    await logAction({
+      user: req.user,
+      action: "coupon_deleted",
+      entityType: "Coupon",
+      entityId: coupon._id,
+      details: `Deleted coupon "${coupon.code}"`,
+    });
+
+    res.status(200).json({ success: true, message: "Coupon deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+export const getAllCoupons = async (req, res) => {
+  try {
+    const coupons = await Coupon.find().sort({ createdAt: -1 });
+    res.status(200).json({ success: true, count: coupons.length, data: coupons });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const toggleCoupon = async (req, res) => {
+  try {
+    const coupon = await Coupon.findById(req.params.id);
+    if (!coupon) {
+      return res.status(404).json({ success: false, message: "Coupon not found" });
+    }
+
+    coupon.active = !coupon.active;
+    await coupon.save();
+
+    await logAction({
+      user: req.user,
+      action: coupon.active ? "coupon_activated" : "coupon_deactivated",
+      entityType: "Coupon",
+      entityId: coupon._id,
+      details: `Coupon "${coupon.code}" ${coupon.active ? "activated" : "deactivated"}`,
+    });
+
+    res.status(200).json({ success: true, message: "Coupon updated", data: coupon });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export const validateCoupon = async (req, res) => {
   try {
     const { code, orderAmount } = req.body;

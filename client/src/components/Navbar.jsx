@@ -34,7 +34,10 @@ function Navbar() {
               <Link to="/orders" className="hover:text-orange-100">Orders</Link>
               <Link to="/checkout" className="hover:text-orange-100">Checkout</Link>
               {user && (
-                <Link to="/notifications" className="hover:text-orange-100">Notifications</Link>
+                <>
+                  <Link to="/profile" className="hover:text-orange-100">My Addresses</Link>
+                  <Link to="/notifications" className="hover:text-orange-100">Notifications</Link>
+                </>
               )}
             </>
           )}
@@ -44,6 +47,8 @@ function Navbar() {
               <Link to="/admin/products" className="hover:text-orange-100">Add Product</Link>
               <Link to="/admin/orders" className="hover:text-orange-100">Admin</Link>
               <Link to="/admin/reviews" className="hover:text-orange-100">Reviews</Link>
+              <Link to="/admin/coupons" className="hover:text-orange-100">Coupons</Link>
+              <Link to="/admin/customers" className="hover:text-orange-100">Customers</Link>
               <Link to="/admin/audit-logs" className="hover:text-orange-100">Audit Logs</Link>
             </>
           )}

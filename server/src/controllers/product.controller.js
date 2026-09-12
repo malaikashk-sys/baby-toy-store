@@ -14,6 +14,7 @@ export const getProducts = async (req, res) => {
     const {
       category,
       ageRange,
+      brand,
       search,
       sort,
       page = 1,
@@ -22,26 +23,37 @@ export const getProducts = async (req, res) => {
       maxPrice,
       minRating,
     } = req.query;
+
     let query = { isActive: true };
 
     if (category) query.category = category;
     if (ageRange) query.ageRange = ageRange;
+
+    // Brand Filter
+    if (brand) {
+      query.brand = { $regex: brand, $options: 'i' };
+    }
+
+    // Search Query
     if (search) {
       query.$text = { $search: search };
     }
 
+    // Price Filter
     if (minPrice || maxPrice) {
       query.price = {};
       if (minPrice) query.price.$gte = Number(minPrice);
       if (maxPrice) query.price.$lte = Number(maxPrice);
     }
 
+    // Rating Filter
     if (minRating) {
       query["rating.average"] = { $gte: Number(minRating) };
     }
 
     let productsQuery = Product.find(query);
 
+    // Sorting Logic
     if (sort === "price-low") {
       productsQuery = productsQuery.sort({ price: 1 });
     } else if (sort === "price-high") {
@@ -52,6 +64,7 @@ export const getProducts = async (req, res) => {
       productsQuery = productsQuery.sort({ createdAt: -1 });
     }
 
+    // Pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
     productsQuery = productsQuery.skip(skip).limit(parseInt(limit));
 
@@ -62,7 +75,7 @@ export const getProducts = async (req, res) => {
       success: true,
       count: products.length,
       total,
-      totalPages: Math.ceil(total / limit),
+      totalPages: Math.ceil(total / parseInt(limit)),
       currentPage: parseInt(page),
       data: products,
     });

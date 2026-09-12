@@ -71,10 +71,10 @@ export const moderateReview = async (req, res) => {
   try {
     const { status } = req.body;
 
-    if (!["approved", "hidden"].includes(status)) {
+    if (!["approved", "rejected"].includes(status)) {
       return res.status(400).json({
         success: false,
-        message: "Status must be 'approved' or 'hidden'",
+        message: "Status must be 'approved' or 'rejected'",
       });
     }
 

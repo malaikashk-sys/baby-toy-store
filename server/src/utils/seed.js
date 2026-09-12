@@ -1,7 +1,9 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import bcrypt from 'bcryptjs';
 import Product from '../models/product.model.js';
 import Category from '../models/category.model.js';
+import User from '../models/user.model.js';
 
 dotenv.config();
 
@@ -105,6 +107,29 @@ const seedDatabase = async () => {
 
     await Product.insertMany(productsToSeed);
     console.log(`${productsToSeed.length} products seeded with complete non-empty values!`);
+
+    // Seed Demo Users (Admin, Staff, Customer) — sirf agar exist na karte hon
+    const demoUsers = [
+      { name: "Demo Admin", email: "admin@toystore.com", password: "Admin123!", role: "admin" },
+      { name: "Demo Staff", email: "staff@toystore.com", password: "Staff123!", role: "staff" },
+      { name: "Demo Customer", email: "customer@toystore.com", password: "Customer123!", role: "customer" },
+    ];
+
+    for (const userData of demoUsers) {
+      const existingUser = await User.findOne({ email: userData.email });
+      if (!existingUser) {
+        const hashedPassword = await bcrypt.hash(userData.password, 10);
+        await User.create({
+          name: userData.name,
+          email: userData.email,
+          password: hashedPassword,
+          role: userData.role,
+        });
+        console.log(`Demo user created: ${userData.email} (${userData.role})`);
+      } else {
+        console.log(`Demo user already exists: ${userData.email}`);
+      }
+    }
 
     process.exit(0);
   } catch (error) {

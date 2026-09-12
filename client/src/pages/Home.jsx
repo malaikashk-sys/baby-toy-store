@@ -96,12 +96,17 @@ function Home() {
               to={`/products/${product._id}`}
               className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition"
             >
-              {product.images && product.images.length > 0 ? (
+                            {product.images && product.images.length > 0 ? (
                 <img
                   src={product.images[0].url}
                   alt={product.images[0].altText || product.name}
                   className="w-full h-32 object-cover rounded-lg mb-3"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=500&q=80";
+                  }}
                 />
+      
               ) : (
                 <div className="w-full h-32 bg-orange-50 rounded-lg mb-3 flex items-center justify-center text-gray-400 text-sm">
                   No Image

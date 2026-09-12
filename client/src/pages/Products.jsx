@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import api from "../services/api";
+import { useDebounce } from '../hooks/useDebounce';
 
 const AGE_RANGES = [
   "0-6 months", "6-12 months", "1-2 years", "3-5 years", "6-8 years", "9+ years",
@@ -18,6 +19,7 @@ const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1596461404969-9ae70f283
 function Products() {
   const [searchParams] = useSearchParams();
 
+  // State Declarations (Sari Hooks Component Body ke andar hain)
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +27,7 @@ function Products() {
   const [message, setMessage] = useState("");
 
   const [search, setSearch] = useState("");
+  const [brand, setBrand] = useState("");
   const [category, setCategory] = useState(searchParams.get("category") || "");
   const [ageRange, setAgeRange] = useState(searchParams.get("ageRange") || "");
   const [sort, setSort] = useState("");
@@ -33,6 +36,8 @@ function Products() {
   const [minRating, setMinRating] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  const debouncedSearch = useDebounce(search, 300);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -50,7 +55,8 @@ function Products() {
     setLoading(true);
     try {
       const params = { page };
-      if (search) params.search = search;
+      if (debouncedSearch) params.search = debouncedSearch;
+      if (brand) params.brand = brand;
       if (category) params.category = category;
       if (ageRange) params.ageRange = ageRange;
       if (sort) params.sort = sort;
@@ -64,6 +70,7 @@ function Products() {
 
       setProducts(productList);
       setTotalPages(total);
+      setError("");
     } catch (err) {
       setError("Failed to load products");
     } finally {
@@ -73,7 +80,7 @@ function Products() {
 
   useEffect(() => {
     fetchProducts();
-  }, [category, ageRange, sort, minPrice, maxPrice, minRating, page]);
+  }, [debouncedSearch, brand, category, ageRange, sort, minPrice, maxPrice, minRating, page]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();

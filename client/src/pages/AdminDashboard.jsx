@@ -31,6 +31,8 @@ function AdminDashboard() {
     { label: "Total Customers", value: stats.totalCustomers },
   ];
 
+  const maxCount = Math.max(...stats.ordersByStatus.map((e) => e.count), 1);
+
   return (
     <div className="max-w-5xl mx-auto p-6">
       <h2 className="text-2xl font-bold text-orange-700 mb-6">Admin Dashboard</h2>
@@ -44,13 +46,21 @@ function AdminDashboard() {
         ))}
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl p-4">
-        <h3 className="text-lg font-semibold text-gray-800 mb-3">Orders by Status</h3>
-        <div className="space-y-2">
+      <div className="bg-white border border-gray-200 rounded-xl p-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">Orders by Status</h3>
+        <div className="space-y-3">
           {stats.ordersByStatus.map((entry) => (
-            <div key={entry._id} className="flex justify-between text-sm border-b border-gray-100 pb-1">
-              <span className="text-gray-600">{entry._id}</span>
-              <span className="font-medium text-orange-600">{entry.count}</span>
+            <div key={entry._id}>
+              <div className="flex justify-between text-sm mb-1">
+                <span className="text-gray-600">{entry._id}</span>
+                <span className="font-medium text-orange-600">{entry.count}</span>
+              </div>
+              <div className="w-full bg-orange-50 rounded-full h-3">
+                <div
+                  className="bg-orange-500 h-3 rounded-full transition-all"
+                  style={{ width: `${(entry.count / maxCount) * 100}%` }}
+                />
+              </div>
             </div>
           ))}
         </div>

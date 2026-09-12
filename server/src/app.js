@@ -16,7 +16,10 @@ import paymentRoutes from "./routes/payment.route.js";
 import categoryRoutes from "./routes/category.route.js";
 import notificationRoutes from "./routes/notification.route.js";
 import auditLogRoutes from "./routes/auditLog.route.js";
+import userRoutes from "./routes/user.route.js";
 import { handleStripeWebhook } from "./controllers/payment.controller.js";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./config/swagger.js";
 dotenv.config();
 
 if (process.env.NODE_ENV !== "test") {
@@ -56,6 +59,8 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/audit-logs", auditLogRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "Server is running" });

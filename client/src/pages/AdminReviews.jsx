@@ -113,7 +113,9 @@ function AdminReviews() {
                   className={`text-xs px-2 py-1 rounded-full ${
                     review.status === "approved"
                       ? "bg-green-100 text-green-700"
-                      : "bg-gray-200 text-gray-600"
+                      : review.status === "rejected"
+                      ? "bg-red-100 text-red-700"
+                      : "bg-yellow-100 text-yellow-700"
                   }`}
                 >
                   {review.status}
@@ -121,19 +123,20 @@ function AdminReviews() {
               </div>
 
               <div className="flex gap-2 mt-3">
-                {review.status === "approved" ? (
-                  <button
-                    onClick={() => handleModerate(review._id, "hidden")}
-                    className="border border-gray-400 text-gray-700 text-sm px-3 py-1.5 rounded-lg hover:bg-gray-100 transition"
-                  >
-                    Hide
-                  </button>
-                ) : (
+                {review.status !== "approved" && (
                   <button
                     onClick={() => handleModerate(review._id, "approved")}
                     className="border border-orange-500 text-orange-600 text-sm px-3 py-1.5 rounded-lg hover:bg-orange-50 transition"
                   >
                     Approve
+                  </button>
+                )}
+                {review.status !== "rejected" && (
+                  <button
+                    onClick={() => handleModerate(review._id, "rejected")}
+                    className="border border-gray-400 text-gray-700 text-sm px-3 py-1.5 rounded-lg hover:bg-gray-100 transition"
+                  >
+                    Reject
                   </button>
                 )}
                 <button

@@ -17,6 +17,10 @@ import AdminCreateStaff from "./pages/AdminCreateStaff";
 import Notifications from "./pages/Notifications";
 import AdminReviews from "./pages/AdminReviews";
 import AdminAuditLogs from "./pages/AdminAuditLogs";
+import Profile from "./pages/Profile";
+import AdminCustomers from "./pages/AdminCustomers";
+import AdminCoupons from "./pages/AdminCoupons";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -42,17 +46,22 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/products" element={<Products />} />
         <Route path="/products/:id" element={<ProductDetail />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/orders" element={<Orders />} />
-        <Route path="/wishlist" element={<Wishlist />} />
-        <Route path="/notifications" element={<Notifications />} />
-        <Route path="/admin/orders" element={<AdminOrders />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/create-staff" element={<AdminCreateStaff />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/admin/products" element={<AdminProducts />} />
-        <Route path="/admin/reviews" element={<AdminReviews />} />
-        <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
+
+        <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+        <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+        <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
+        <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+
+        <Route path="/admin/orders" element={<ProtectedRoute><AdminOrders /></ProtectedRoute>} />
+        <Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/admin/create-staff" element={<ProtectedRoute><AdminCreateStaff /></ProtectedRoute>} />
+        <Route path="/admin/products" element={<ProtectedRoute><AdminProducts /></ProtectedRoute>} />
+        <Route path="/admin/reviews" element={<ProtectedRoute><AdminReviews /></ProtectedRoute>} />
+        <Route path="/admin/audit-logs" element={<ProtectedRoute><AdminAuditLogs /></ProtectedRoute>} />
+        <Route path="/admin/customers" element={<ProtectedRoute><AdminCustomers /></ProtectedRoute>} />
+        <Route path="/admin/coupons" element={<ProtectedRoute><AdminCoupons /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );
