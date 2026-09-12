@@ -36,6 +36,8 @@ function Products() {
   const [minRating, setMinRating] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+  const isCustomer = storedUser?.role === "customer";
 
   const debouncedSearch = useDebounce(search, 300);
 
@@ -216,29 +218,31 @@ function Products() {
                       {hasVariants ? "Multiple options available" : `Stock: ${product.stock ?? 'Available'}`}
                     </p>
                   </div>
-                  <div className="flex gap-2 mt-3">
-                    {hasVariants ? (
-                      <Link
-                        to={`/products/${product._id}`}
-                        className="flex-1 text-center bg-orange-500 text-white text-sm py-1.5 rounded-lg hover:bg-orange-600 transition"
-                      >
-                        View Options
-                      </Link>
-                    ) : (
+                                    {isCustomer && (
+                    <div className="flex gap-2 mt-3">
+                      {hasVariants ? (
+                        <Link
+                          to={`/products/${product._id}`}
+                          className="flex-1 text-center bg-orange-500 text-white text-sm py-1.5 rounded-lg hover:bg-orange-600 transition"
+                        >
+                          View Options
+                        </Link>
+                      ) : (
+                        <button
+                          onClick={() => handleAddToCart(product._id)}
+                          className="flex-1 bg-orange-500 text-white text-sm py-1.5 rounded-lg hover:bg-orange-600 transition"
+                        >
+                          Add to Cart
+                        </button>
+                      )}
                       <button
-                        onClick={() => handleAddToCart(product._id)}
-                        className="flex-1 bg-orange-500 text-white text-sm py-1.5 rounded-lg hover:bg-orange-600 transition"
+                        onClick={() => handleAddToWishlist(product._id)}
+                        className="border border-orange-500 text-orange-600 text-sm px-2 py-1.5 rounded-lg hover:bg-orange-50 transition"
                       >
-                        Add to Cart
+                        ♡
                       </button>
-                    )}
-                    <button
-                      onClick={() => handleAddToWishlist(product._id)}
-                      className="border border-orange-500 text-orange-600 text-sm px-2 py-1.5 rounded-lg hover:bg-orange-50 transition"
-                    >
-                      ♡
-                    </button>
-                  </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
