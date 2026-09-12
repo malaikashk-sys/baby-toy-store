@@ -230,7 +230,7 @@ npm run dev
 ![Admin Products](screenshots/admin-products.png)
 ![Review Moderation](screenshots/admin-reviews.png)
 ![Coupon Management](screenshots/admin-coupons.png)
-![Customer Management](screenshots/admin-customer.png)
+![Customer Management](screenshots/admin-customers.png)
 ![Add Staff](screenshots/admin-addstaff.png)
 ![AuditLog  Management](screenshots/admin-auditlog.png)
 
