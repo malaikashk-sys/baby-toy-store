@@ -217,7 +217,7 @@ npm run dev
 ## 📸 Screenshots
 
 ### Customer View
-![Homepage](screenshots/hmepage.png)
+![Homepage](screenshots/homepage.png)
 ![Products with Filters](screenshots/products.png)
 ![Product Detail](screenshots/product-detail.png)
 ![Cart](screenshots/cart.png)
@@ -225,14 +225,14 @@ npm run dev
 ![Order History](screenshots/orders.png)
 ![Notifications](screenshots/notifications.png)
 
-### Admin View!
+### Admin View
 ![Admin Dashboard](screenshots/admin-dashboard.png)
 ![Admin Products](screenshots/admin-products.png)
 ![Review Moderation](screenshots/admin-reviews.png)
 ![Coupon Management](screenshots/admin-coupons.png)
 ![Customer Management](screenshots/admin-customers.png)
 ![Add Staff](screenshots/admin-addstaff.png)
-![AuditLog  Management](screenshots/admin-auditlog.png)
+![Audit Log Management](screenshots/admin-auditlog.png)
 
 ### API Documentation
 ![Swagger UI](screenshots/swagger-docs.png)
