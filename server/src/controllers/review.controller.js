@@ -66,7 +66,22 @@ export const getAllReviewsAdmin = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+export const getAllReviewsGlobalAdmin = async (req, res) => {
+  try {
+    const reviews = await Review.find()
+      .populate("user", "name")
+      .populate("product", "name")
+      .sort({ status: 1, createdAt: -1 }); // pending pehle (alphabetically "approved" < "pending" < "rejected", isliye custom sort behtar hoga)
 
+    // Pending ko upar lana (custom sort JS mein)
+    const statusOrder = { pending: 0, approved: 1, rejected: 2 };
+    reviews.sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
+
+    res.status(200).json({ success: true, count: reviews.length, data: reviews });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 export const moderateReview = async (req, res) => {
   try {
     const { status } = req.body;

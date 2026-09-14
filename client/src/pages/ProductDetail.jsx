@@ -35,10 +35,8 @@ function ProductDetail() {
       }
     };
     fetchProduct();
-    // Reviews sirf customer-facing hain, admin/staff ke liye Review Moderation page hai
-    if (isCustomer) {
-      fetchReviews();
-    }
+    // Reviews list sab ko dikhni chahiye (guests samet); sirf submit-form customer-only hai
+    fetchReviews();
   }, [id]);
 
   const handleSubmitReview = async (e) => {
@@ -125,11 +123,11 @@ function ProductDetail() {
         )}
       </div>
 
-      {/* Reviews section — sirf customers ke liye. Admin/staff Review Moderation page use karte hain. */}
-      {isCustomer && (
-        <div className="mt-8">
-          <h3 className="text-lg font-bold text-orange-700 mb-3">Reviews</h3>
+      {/* Reviews list — sab dekh sakte hain (guests samet). Sirf form customer-only hai. */}
+      <div className="mt-8">
+        <h3 className="text-lg font-bold text-orange-700 mb-3">Reviews</h3>
 
+        {isCustomer && (
           <form onSubmit={handleSubmitReview} className="bg-white border border-gray-200 rounded-xl p-4 mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
             <select
@@ -153,7 +151,11 @@ function ProductDetail() {
             </button>
             {message && <p className="text-sm mt-2 text-green-600">{message}</p>}
           </form>
+        )}
 
+        {reviews.length === 0 ? (
+          <p className="text-gray-500 text-sm">No reviews yet.</p>
+        ) : (
           <div className="space-y-3">
             {reviews.map((review) => (
               <div key={review._id} className="bg-white border border-gray-200 rounded-xl p-4">
@@ -165,8 +167,8 @@ function ProductDetail() {
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import {
   getAllReviewsAdmin,
   moderateReview,
   deleteReview,
+  getAllReviewsGlobalAdmin,
 } from "../controllers/review.controller.js";
 import { protect, authorize } from "../middlewares/auth.middleware.js";
 
@@ -15,6 +16,9 @@ router.get("/:productId", getProductReviews);
 router.post("/:productId", protect, createReview);
 
 // Admin/Staff moderation routes
+// IMPORTANT: /admin/all must come BEFORE /admin/:productId, warna Express
+// "all" ko productId samajh lega aur galat route match hoga
+router.get("/admin/all", protect, authorize("admin", "staff"), getAllReviewsGlobalAdmin);
 router.get("/admin/:productId", protect, authorize("admin", "staff"), getAllReviewsAdmin);
 router.patch("/moderate/:reviewId", protect, authorize("admin", "staff"), moderateReview);
 router.delete("/:reviewId", protect, authorize("admin", "staff"), deleteReview);

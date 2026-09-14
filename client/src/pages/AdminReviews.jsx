@@ -2,34 +2,16 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 
 function AdminReviews() {
-  const [products, setProducts] = useState([]);
-  const [selectedProduct, setSelectedProduct] = useState("");
   const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await api.get("/products", { params: { limit: 100 } });
-        setProducts(response.data.data);
-      } catch (err) {
-        setError("Failed to load products");
-      }
-    };
-    fetchProducts();
-  }, []);
-
-  const fetchReviews = async (productId) => {
-    if (!productId) {
-      setReviews([]);
-      return;
-    }
+  const fetchReviews = async () => {
     setLoading(true);
     setError("");
     try {
-      const response = await api.get(`/reviews/admin/${productId}`);
+      const response = await api.get("/reviews/admin/all");
       setReviews(response.data.data);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to load reviews");
@@ -38,18 +20,16 @@ function AdminReviews() {
     }
   };
 
-  const handleProductChange = (e) => {
-    const productId = e.target.value;
-    setSelectedProduct(productId);
-    fetchReviews(productId);
-  };
+  useEffect(() => {
+    fetchReviews();
+  }, []);
 
   const handleModerate = async (reviewId, status) => {
     setMessage("");
     try {
       await api.patch(`/reviews/moderate/${reviewId}`, { status });
       setMessage(`Review ${status}`);
-      fetchReviews(selectedProduct);
+      fetchReviews();
     } catch (err) {
       setMessage(err.response?.data?.message || "Failed to update review");
     }
@@ -61,45 +41,44 @@ function AdminReviews() {
     try {
       await api.delete(`/reviews/${reviewId}`);
       setMessage("Review deleted");
-      fetchReviews(selectedProduct);
+      fetchReviews();
     } catch (err) {
       setMessage(err.response?.data?.message || "Failed to delete review");
     }
   };
 
+  const pendingCount = reviews.filter((r) => r.status === "pending").length;
+
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <h2 className="text-2xl font-bold text-orange-700 mb-4">Review Moderation</h2>
-
-      <select
-        value={selectedProduct}
-        onChange={handleProductChange}
-        className="border border-gray-300 rounded-lg px-3 py-2 mb-6 w-full max-w-md focus:outline-none focus:ring-2 focus:ring-orange-400"
-      >
-        <option value="">Select a product to view reviews</option>
-        {products.map((p) => (
-          <option key={p._id} value={p._id}>{p.name}</option>
-        ))}
-      </select>
+      <h2 className="text-2xl font-bold text-orange-700 mb-2">Review Moderation</h2>
+      {pendingCount > 0 && (
+        <p className="text-sm text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 mb-4 inline-block">
+          {pendingCount} review{pendingCount > 1 ? "s" : ""} pending approval
+        </p>
+      )}
 
       {message && <p className="text-green-600 mb-4">{message}</p>}
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
       {loading ? (
         <p className="text-gray-500">Loading reviews...</p>
-      ) : !selectedProduct ? (
-        <p className="text-gray-400">Select a product above to see its reviews.</p>
       ) : reviews.length === 0 ? (
-        <p className="text-gray-500">No reviews for this product.</p>
+        <p className="text-gray-500">No reviews yet.</p>
       ) : (
         <div className="space-y-4">
           {reviews.map((review) => (
             <div
               key={review._id}
-              className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm"
+              className={`bg-white border rounded-xl p-4 shadow-sm ${
+                review.status === "pending" ? "border-yellow-300" : "border-gray-200"
+              }`}
             >
               <div className="flex justify-between items-start">
                 <div>
+                  <p className="text-xs text-gray-400 mb-1">
+                    Product: <span className="text-gray-600 font-medium">{review.product?.name || "Unknown product"}</span>
+                  </p>
                   <p className="font-semibold text-gray-800">
                     {review.user?.name || "Unknown user"}{" "}
                     <span className="text-orange-600">{"★".repeat(review.rating)}</span>
