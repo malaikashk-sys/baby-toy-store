@@ -236,8 +236,8 @@ npm run dev
 
 ### API Documentation
 ![Swagger UI](screenshots/swagger-docs.png)
-### Automated  Testing 
-![Testing]( screenshoots/testing.png)
+### Automated  Testing
+![Testing](screenshots/testing.png)
 ## 🎥 Demo Videos
 
 - **Guest/Without Login Flow:** https://drive.google.com/file/d/1PtBgijglzoiRpz19WSfAlIQosNHKJ0Vj/view?usp=sharing
