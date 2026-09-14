@@ -237,6 +237,12 @@ npm run dev
 ### API Documentation
 ![Swagger UI](screenshots/swagger-docs.png)
 
+
+## 🎥 Demo Videos
+
+- **Guest/Without Login Flow:** https://drive.google.com/file/d/1PtBgijglzoiRpz19WSfAlIQosNHKJ0Vj/view?usp=sharing
+- **Logged-in User Flow:** https://drive.google.com/file/d/1tdCAIQE5anZOo_wexd4jhk7PAligTy48/view?usp=sharing
+
 ## 👩‍💻 Author
 
 **Malaika Farooq**
